@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Expense Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 min-h-screen">
+  <div class="max-w-lg mx-auto py-10 px-4">
+    <h1 class="text-3xl font-bold text-center mb-8 text-slate-800">Expense Tracker</h1>
+
+    <div class="bg-white rounded-2xl shadow p-6 mb-6">
+      <div class="grid grid-cols-2 gap-4 text-center">
+        <div>
+          <p class="text-sm text-slate-500">Income</p>
+          <p class="text-2xl font-bold text-green-600" id="income">Rs 0</p>
+        </div>
+        <div>
+          <p class="text-sm text-slate-500">Expense</p>
+          <p class="text-2xl font-bold text-red-500" id="expense">Rs 0</p>
+        </div>
+      </div>
+      <div class="mt-4 pt-4 border-t text-center">
+        <p class="text-sm text-slate-500">Balance</p>
+        <p class="text-3xl font-bold text-slate-800" id="balance">Rs 0</p>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow p-6 mb-6">
+      <h2 class="font-semibold mb-4">Add Transaction</h2>
+      <input id="desc" type="text" placeholder="Description" class="w-full border rounded-xl px-4 py-3 mb-3 outline-none focus:border-blue-500">
+      <input id="amount" type="number" placeholder="Amount (use - for expense)" class="w-full border rounded-xl px-4 py-3 mb-3 outline-none focus:border-blue-500">
+      <button onclick="addTransaction()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700">Add</button>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow p-6">
+      <h2 class="font-semibold mb-4">History</h2>
+      <ul id="list" class="space-y-3"></ul>
+    </div>
+  </div>
+
+  <script>
+    let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+    function updateUI() {
+      const list = document.getElementById('list');
+      list.innerHTML = '';
+      let income = 0, expense = 0;
+
+      transactions.forEach((t, i) => {
+        const li = document.createElement('li');
+        li.className = `flex justify-between items-center p-3 rounded-xl ${t.amount > 0 ? 'bg-green-50' : 'bg-red-50'}`;
+        li.innerHTML = `
+          <span>${t.desc}</span>
+          <div class="flex items-center gap-3">
+            <span class="font-semibold ${t.amount > 0 ? 'text-green-600' : 'text-red-500'}">${t.amount > 0 ? '+' : ''}Rs ${t.amount}</span>
+            <button onclick="removeTransaction(${i})" class="text-slate-400 hover:text-red-500">✕</button>
+          </div>`;
+        list.appendChild(li);
+        if (t.amount > 0) income += t.amount;
+        else expense += Math.abs(t.amount);
+      });
+
+      document.getElementById('income').innerText = 'Rs ' + income;
+      document.getElementById('expense').innerText = 'Rs ' + expense;
+      document.getElementById('balance').innerText = 'Rs ' + (income - expense);
+      localStorage.setItem('transactions', JSON.stringify(transactions));
+    }
+
+    function addTransaction() {
+      const desc = document.getElementById('desc').value.trim();
+      const amount = parseFloat(document.getElementById('amount').value);
+      if (!desc || isNaN(amount)) return alert('Please enter valid data');
+      transactions.push({ desc, amount });
+      document.getElementById('desc').value = '';
+      document.getElementById('amount').value = '';
+      updateUI();
+    }
+
+    function removeTransaction(i) {
+      transactions.splice(i, 1);
+      updateUI();
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>
